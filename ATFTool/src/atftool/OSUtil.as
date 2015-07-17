@@ -1,4 +1,4 @@
-package Util
+package atftool
 {
 	import flash.system.Capabilities;
 
