@@ -108,6 +108,7 @@ package com.bit101.components
 			_panel.setSize(_width, _height);
 			_panel.draw();
 			
+			_tf.setTextFormat(_format);
 			_tf.width = _width - 4;
 			_tf.height = _height - 4;
 			if(_html)
@@ -130,7 +131,6 @@ package com.bit101.components
 				_tf.selectable = _selectable;
 				_tf.type = TextFieldType.DYNAMIC;
 			}
-			_tf.setTextFormat(_format);
 		}
 		
 		

@@ -14,11 +14,12 @@ package atftool
 	import flash.filesystem.FileMode;
 	import flash.filesystem.FileStream;
 	import flash.utils.ByteArray;
-	
+
 
 	public class ATFGenerate extends EventDispatcher
 	{
 		public static const EVENT_GENERATE_COMPLETE:String = "EVENT_GENERATE_COMPLETE";
+		public static const EVENT_GENERATE_ERROR:String = "EVENT_GENERATE_ERROR";
 
 		private var file:File;
 		private var info:GenerateInfo;
@@ -50,6 +51,8 @@ package atftool
 			this.logHandle = logHandle;
 
 			this.isJPG = file.extension.toLocaleLowerCase() == "jpg" || file.extension.toLocaleLowerCase() == "jpeg";
+
+			logHandle("----开始生成" + this.file.name + "的atf文件----");
 
 			if (this.info.createMips || this.isJPG)
 			{
@@ -138,7 +141,7 @@ package atftool
 			}
 			catch (error:Error)
 			{
-				logHandle(error.getStackTrace() + "\n");
+				logHandle(error.getStackTrace(), 0xFF0000);
 			}
 		}
 
@@ -171,18 +174,37 @@ package atftool
 
 		private function onData(e:ProgressEvent):void
 		{
-			logHandle(nativeProcess.standardOutput.readUTFBytes(nativeProcess.standardOutput.bytesAvailable));
+			var log:String = nativeProcess.standardOutput.readUTFBytes(nativeProcess.standardOutput.bytesAvailable);
+			log = log.replace(/^\.+/g, "");
+			log = log.replace(/$\.+/g, "");
+			log = log.replace(/\r\n/g, "");
+			if (log == "")
+				return;
+			logHandle(log);
 		}
 
 		private function onError(e:ProgressEvent):void
 		{
-			logHandle(nativeProcess.standardError.readUTFBytes(nativeProcess.standardError.bytesAvailable));
+			var log:String = nativeProcess.standardOutput.readUTFBytes(nativeProcess.standardOutput.bytesAvailable);
+			log = log.replace(/^\.+/g, "");
+			log = log.replace(/$\.+/g, "");
+			log = log.replace(/\r\n/g, "");
+			if (log == "")
+				return;
+			logHandle(log, 0xFF0000);
 		}
 
 		private function loaderComplete(e:Event):void
 		{
 			loader.contentLoaderInfo.removeEventListener(Event.COMPLETE, loaderComplete);
 			var bitmapData:BitmapData = (loader.contentLoaderInfo.content as Bitmap).bitmapData;
+
+			if (!BitmapUtil.isPowerOfTwo(bitmapData.width) || !BitmapUtil.isPowerOfTwo(bitmapData.height))
+			{
+				logHandle("----" + this.file.name + "长度或者宽度不是2的幂,跳过此文件----", 0xFF0000);
+				dispatchEvent(new Event(EVENT_GENERATE_ERROR));
+				return;
+			}
 
 			var nativePath:String = file.nativePath;
 			var ext:String = file.extension;
@@ -195,7 +217,7 @@ package atftool
 				var data:ByteArray = bitmapData.encode(bitmapData.rect, new PNGEncoderOptions(true));
 				this.file = writeBytes(path, data);
 			}
-			
+
 			this.files.push(file);
 
 			if (this.info.createMips)

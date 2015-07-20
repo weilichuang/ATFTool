@@ -125,5 +125,23 @@ package atftool
 				return value;
 			}
 		}
+		
+		/**
+		 * Returns true if the number is a power of 2 (2,4,8,16...)
+		 * 
+		 * A good implementation found on the Java boards. note: a number is a power
+		 * of two if and only if it is the smallest number with that number of
+		 * significant bits. Therefore, if you subtract 1, you know that the new
+		 * number will have fewer bits, so ANDing the original number with anything
+		 * less than it will give 0.
+		 * 
+		 * @param number
+		 *            The number to test.
+		 * @return True if it is a power of two.
+		 */
+		public static function isPowerOfTwo(number:int):Boolean
+		{
+			return (number > 0) && (number & (number - 1)) == 0;
+		}
 	}
 }

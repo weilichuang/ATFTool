@@ -6,9 +6,10 @@ package atftool
 	import com.bit101.components.Label;
 	import com.bit101.components.ProgressBar;
 	import com.bit101.components.PushButton;
+	import com.bit101.components.RadioButton;
 	import com.bit101.components.TextArea;
 	import com.bit101.utils.MinimalConfigurator;
-
+	
 	import flash.display.Sprite;
 	import flash.events.Event;
 	import flash.events.MouseEvent;
@@ -19,6 +20,7 @@ package atftool
 
 	public class UIPanel extends Sprite
 	{
+		public static const EVENT_LOAD_COMPLETE:String = "EVENT_LOAD_COMPLETE";
 		private var _config:MinimalConfigurator;
 
 		private var _platform:Array = ["p", "d", "e", ""];
@@ -53,6 +55,25 @@ package atftool
 
 			_logTextArea = _config.getCompById("logs") as TextArea;
 			_logTextArea.editable = false;
+			_logTextArea.html = true;
+			
+			dispatchEvent(new Event(EVENT_LOAD_COMPLETE));
+		}
+
+		public function readConfig(config:Object):void
+		{
+			this.sourceDir = config.sourceDir;
+			this.exportDir = config.exportDir;
+			this.platform = config.platform;
+
+			(_config.getCompById("compress") as CheckBox).selected = config.compress;
+			(_config.getCompById("mips") as CheckBox).selected = config.mips;
+			qualityText.text = config.quality;
+
+			(_config.getCompById("create_mips") as CheckBox).selected = config.createMips;
+			(_config.getCompById("mip_width") as InputText).text = config.mipWidth;
+			(_config.getCompById("mip_height") as InputText).text = config.mipHeight;
+			(_config.getCompById("mip_ext") as InputText).text = config.mipExt;
 		}
 
 		protected function onTextInput(event:Event):void
@@ -121,13 +142,13 @@ package atftool
 			clearLogs();
 			if (sourceDir == null || sourceDir == "")
 			{
-				log("你还未设置源目录...\n");
+				log("你还未设置源目录...");
 				return;
 			}
 
 			if (exportDir == null || exportDir == "")
 			{
-				log("你还未设置导出目录...\n");
+				log("你还未设置导出目录...");
 				return;
 			}
 
@@ -178,6 +199,16 @@ package atftool
 		public function get platform():String
 		{
 			return _platform[_platformIndex];
+		}
+
+		public function set platform(value:String):void
+		{
+			var index:int = _platform.indexOf(value);
+
+			for (var i:int = 0; i < 4; i++)
+			{
+				(_config.getCompById("p" + i) as RadioButton).selected = i == index;
+			}
 		}
 
 		/**
@@ -238,9 +269,12 @@ package atftool
 		/**
 		 * 输出日志
 		 */
-		public function log(text:String):void
+		public function log(text:String, color:uint = 0x0):void
 		{
-			_logTextArea.text += text;
+			var colorStr:String = "#" + color.toString(16);
+			var colorText:String = "<font color='" + colorStr + "'>" + text + "</font>\n";
+
+			_logTextArea.text += colorText;
 			setTimeout(function():void
 			{
 				_logTextArea.textField.scrollV = _logTextArea.textField.maxScrollV;

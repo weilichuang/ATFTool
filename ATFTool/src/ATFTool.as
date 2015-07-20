@@ -5,7 +5,9 @@ package
 	import flash.display.StageScaleMode;
 	import flash.events.Event;
 	import flash.filesystem.File;
-
+	import flash.filesystem.FileMode;
+	import flash.filesystem.FileStream;
+	
 	import atftool.ATFGenerate;
 	import atftool.GenerateInfo;
 	import atftool.UIPanel;
@@ -30,10 +32,73 @@ package
 
 			ui = new UIPanel();
 			ui.addEventListener("Export", onExport);
+			ui.addEventListener(UIPanel.EVENT_LOAD_COMPLETE, onUILoadComplete);
 			addChild(ui);
 
 			generateAtf = new ATFGenerate();
 			generateAtf.addEventListener(ATFGenerate.EVENT_GENERATE_COMPLETE, onGenerateComplete);
+			generateAtf.addEventListener(ATFGenerate.EVENT_GENERATE_ERROR, onGenerateError);
+		}
+		
+		protected function onUILoadComplete(event:Event):void
+		{
+			readConfig();
+		}
+		
+		private function readConfig():void
+		{
+			var configFile:File = new File(File.applicationStorageDirectory.resolvePath("app.config").nativePath);
+			if(configFile.exists)
+			{
+				var fs:FileStream = new FileStream();
+				fs.open(configFile, FileMode.READ);
+				
+				var configTxt:String = fs.readUTFBytes(fs.bytesAvailable);
+				fs.close();
+				
+				var configJson:Object = JSON.parse(configTxt);
+				
+				ui.readConfig(configJson);
+			}
+		}
+		
+		private function saveConfig():void
+		{
+			var data:Object = {};
+			data.sourceDir = generateInfo.sourceDir;
+			data.exportDir = generateInfo.exportDir;
+			data.platform = generateInfo.platform;
+			data.compress = generateInfo.compress;
+			data.mips = generateInfo.mips;
+			data.quality = generateInfo.quality;
+			
+			data.createMips = generateInfo.createMips;
+			data.mipWidth = generateInfo.mipWidth;
+			data.mipHeight = generateInfo.mipHeight;
+			data.mipExt = generateInfo.mipExt;
+			
+			var json:String = JSON.stringify(data);
+			
+			var configFile:File = new File(File.applicationStorageDirectory.resolvePath("app.config").nativePath);
+			
+			var fs:FileStream = new FileStream();
+			fs.open(configFile, FileMode.WRITE);
+			fs.writeUTFBytes(json);
+			fs.close();
+		}
+
+		protected function onGenerateError(event:Event):void
+		{
+			ui.updateProgress((totalFile - exportFiles.length), totalFile);
+			if (exportFiles.length == 0)
+			{
+				ui.log("--------------导出完毕-------------------");
+				ui.exportBtnEnabled = true;
+			}
+			else
+			{
+				generateAtf.generate(exportFiles.pop(), generateInfo, logCallBack);
+			}
 		}
 
 		protected function onGenerateComplete(event:Event):void
@@ -59,7 +124,15 @@ package
 
 			generateInfo = new GenerateInfo();
 			generateInfo.sourceDir = ui.sourceDir;
+			if (generateInfo.sourceDir.charAt(generateInfo.sourceDir.length - 1) == "\\")
+			{
+				generateInfo.sourceDir = generateInfo.sourceDir.substr(0, generateInfo.sourceDir.length - 1);
+			}
 			generateInfo.exportDir = ui.exportDir;
+			if (generateInfo.exportDir.charAt(generateInfo.exportDir.length - 1) == "\\")
+			{
+				generateInfo.exportDir = generateInfo.exportDir.substr(0, generateInfo.exportDir.length - 1);
+			}
 			generateInfo.platform = ui.platform;
 			generateInfo.compress = ui.compress;
 			generateInfo.mips = ui.mips;
@@ -68,10 +141,12 @@ package
 			generateInfo.mipWidth = ui.mipWidth;
 			generateInfo.mipHeight = ui.mipHeight;
 			generateInfo.mipExt = ui.mipExt;
+			
+			saveConfig();
 
 			if (generateInfo.mipExt == "" || generateInfo.mipExt == null)
 			{
-				ui.log("缩略图后缀不能为空\n");
+				ui.log("缩略图后缀不能为空", 0xFF0000);
 				return;
 			}
 
@@ -84,13 +159,13 @@ package
 
 			if (exportFiles.length == 0)
 			{
-				ui.log("没有文件需要导出.\n");
+				ui.log("没有文件需要导出.", 0xFF0000);
 				ui.exportBtnEnabled = true;
 			}
 			else
 			{
-				ui.log("开始导出ATF...\n");
-				ui.log("总共选择了" + exportFiles.length + "个文件.\n");
+				ui.log("开始导出ATF...");
+				ui.log("总共选择了" + exportFiles.length + "个文件.");
 
 				generateAtf.generate(exportFiles.pop(), generateInfo, logCallBack);
 			}
@@ -115,7 +190,8 @@ package
 				else
 				{
 					//非指定格式图片，直接拷贝到新目录
-					if (f.extension.toLocaleLowerCase() != "png" && f.extension.toLocaleLowerCase() != "jpg" && f.extension.toLocaleLowerCase() != "jpeg")
+					var ext:String = f.extension.toLocaleLowerCase();
+					if (ext != "png" && ext != "jpg" && ext != "jpeg")
 					{
 						if (generateInfo.sourceDir != generateInfo.exportDir)
 							copyFile(f);
@@ -150,9 +226,9 @@ package
 			}
 		}
 
-		private function logCallBack(text:String):void
+		private function logCallBack(text:String, color:uint = 0x0):void
 		{
-			ui.log(text);
+			ui.log(text, color);
 		}
 	}
 }
