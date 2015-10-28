@@ -27,6 +27,8 @@ package atftool
 		private var _platformIndex:int = 1;
 
 		private var _logTextArea:TextArea;
+		
+		private var qualityText:InputText;
 
 		public function UIPanel()
 		{
@@ -39,8 +41,6 @@ package atftool
 			_config.addEventListener(Event.COMPLETE, loadXmlComplete);
 		}
 
-		private var qualityText:InputText;
-
 		private function loadXmlComplete(e:Event):void
 		{
 			for (var i:int = 0; i < 4; i++)
@@ -52,7 +52,7 @@ package atftool
 			qualityText.restrict = "0123456789";
 			qualityText.textField.addEventListener(TextEvent.TEXT_INPUT, onTextInput);
 			qualityText.addEventListener(Event.CHANGE, onTextInput);
-
+			
 			_logTextArea = _config.getCompById("logs") as TextArea;
 			_logTextArea.editable = false;
 			_logTextArea.html = true;
@@ -74,6 +74,7 @@ package atftool
 			(_config.getCompById("mip_width") as InputText).text = config.mipWidth;
 			(_config.getCompById("mip_height") as InputText).text = config.mipHeight;
 			(_config.getCompById("mip_ext") as InputText).text = config.mipExt;
+			exportExt = config.exportExt ? config.exportExt : "atf";
 		}
 
 		protected function onTextInput(event:Event):void
@@ -179,6 +180,11 @@ package atftool
 		{
 			return (_config.getCompById("sourceDir") as InputText).text;
 		}
+		
+		public function get exportDir():String
+		{
+			return (_config.getCompById("exportDir") as InputText).text;
+		}
 
 		public function set exportDir(value:String):void
 		{
@@ -186,11 +192,16 @@ package atftool
 		}
 
 		/**
-		 * @return 输出路径
+		 * @return 输出文件后缀名
 		 */
-		public function get exportDir():String
+		public function get exportExt():String
 		{
-			return (_config.getCompById("exportDir") as InputText).text;
+			return (_config.getCompById("exp_ext") as InputText).text;
+		}
+		
+		public function set exportExt(value:String):void
+		{
+			(_config.getCompById("exp_ext") as InputText).text = value;
 		}
 
 		/**

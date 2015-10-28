@@ -16,7 +16,7 @@ package atftool
 	public class BitmapUtil
 	{
 
-		private static var sizes:Vector.<int> = Vector.<int>[2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096];
+		private static var sizes:Vector.<int> = Vector.<int>([2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096]);
 
 		/**
 		 * 图像尺寸自动纠正为2幂

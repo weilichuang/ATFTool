@@ -74,7 +74,7 @@ package atftool
 		{
 			var sourceFilePath:String = file.nativePath;
 			var exportFilePath:String = sourceFilePath.replace(this.info.sourceDir, this.info.exportDir);
-			exportFilePath = exportFilePath.replace("." + file.extension, ".atf");
+			exportFilePath = exportFilePath.replace("." + file.extension, "."+this.info.exportExt);
 
 			if (executableFile == null)
 			{

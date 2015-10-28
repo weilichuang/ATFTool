@@ -42,6 +42,10 @@
 				<Label text="(0-180之间，越小输出质量越高)"/>
 			</HBox>
 			<HBox>
+				<Label text="输出文件后缀名:"/>
+				<InputText id="exp_ext" enabled="true" width="50" text="atf" />
+			</HBox>
+			<HBox>
 				<PushButton id="export" label="导出" event="click:onExport"/>
 				<ProgressBar id="progress" value="0" width="100"/>
 				<Label id="progressTxt" text=""/>

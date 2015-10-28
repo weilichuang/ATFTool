@@ -17,6 +17,11 @@ package atftool
 		public var mipWidth:int;
 		public var mipHeight:int;
 		public var mipExt:String;
+		
+		/**
+		 * 导出后缀名
+		 */
+		public var exportExt:String;
 
 		public function GenerateInfo()
 		{

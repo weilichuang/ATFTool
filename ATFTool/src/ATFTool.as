@@ -76,6 +76,7 @@ package
 			data.mipWidth = generateInfo.mipWidth;
 			data.mipHeight = generateInfo.mipHeight;
 			data.mipExt = generateInfo.mipExt;
+			data.exportExt = generateInfo.exportExt;
 			
 			var json:String = JSON.stringify(data);
 			
@@ -141,6 +142,7 @@ package
 			generateInfo.mipWidth = ui.mipWidth;
 			generateInfo.mipHeight = ui.mipHeight;
 			generateInfo.mipExt = ui.mipExt;
+			generateInfo.exportExt = ui.exportExt;
 			
 			saveConfig();
 
@@ -191,7 +193,7 @@ package
 				{
 					//非指定格式图片，直接拷贝到新目录
 					var ext:String = f.extension.toLocaleLowerCase();
-					if (ext != "png" && ext != "jpg" && ext != "jpeg")
+					if (ext != "png" && ext != "jpg")
 					{
 						if (generateInfo.sourceDir != generateInfo.exportDir)
 							copyFile(f);
